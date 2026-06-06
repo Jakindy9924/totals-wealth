@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<title>Totals Wealth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#161618; --bg2:#1f1f22; --card:#232327; --line:#2e2e33;
+    --text:#f5f5f7; --muted:#8e8e93; --green:#30d158;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; }
+  body{
+    font-family:'Inter','IBM Plex Sans Thai',sans-serif; color:var(--text);
+    background:radial-gradient(120% 70% at 50% -10%, #26262b 0%, var(--bg) 55%);
+    min-height:100vh; padding:22px 18px 40px; display:flex; justify-content:center;
+  }
+  .wrap{ width:100%; max-width:460px; }
+
+  .top{ display:flex; align-items:flex-start; justify-content:space-between; padding-bottom:16px; border-bottom:1px solid var(--line); }
+  .brand{ font-size:25px; font-weight:800; letter-spacing:-.5px; }
+  .meta{ text-align:right; }
+  .date{ color:var(--muted); font-size:13px; font-weight:500; line-height:1.5; }
+  .refresh{ background:none; border:none; color:var(--muted); font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; margin-top:2px; }
+  .refresh svg{ width:12px; height:12px; }
+  .refresh.spin svg{ animation:spin .8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .donut-zone{ position:relative; display:grid; place-items:center; margin:26px 0 30px; }
+  .donut{ width:260px; height:260px; }
+  .center{ position:absolute; text-align:center; width:170px; }
+  .total{ font-size:24px; font-weight:800; letter-spacing:-.6px; white-space:nowrap; }
+  .total small{ font-size:16px; font-weight:700; }
+  .total-label{ color:var(--muted); font-size:13px; margin-top:3px; }
+  .delta{ color:var(--green); font-size:12.5px; font-weight:600; margin-top:5px; }
+
+  .hint{ text-align:center; color:var(--muted); font-size:12.5px; margin:-12px 0 14px; }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  .acard{ border-radius:18px; padding:16px 16px 14px; border:1px solid var(--line); position:relative; overflow:hidden; min-height:118px; display:flex; flex-direction:column; cursor:pointer; transition:transform .12s, box-shadow .2s; }
+  .acard:active{ transform:scale(.97); }
+  .acard .name{ font-size:15px; font-weight:600; padding-right:26px; line-height:1.25; }
+  .acard .emoji{ position:absolute; top:14px; right:14px; font-size:19px; line-height:1; }
+  .acard .amt{ font-size:23px; font-weight:800; letter-spacing:-.5px; margin-top:8px; }
+  .acard .amt small{ font-size:16px; font-weight:700; }
+  .acard .foot{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:12px; }
+  .bar{ height:5px; border-radius:99px; background:rgba(255,255,255,.12); flex:1; overflow:hidden; }
+  .bar > i{ display:block; height:100%; border-radius:99px; width:0; transition:width .8s cubic-bezier(.2,.8,.2,1); }
+  .pct{ font-size:13px; font-weight:600; color:var(--muted); white-space:nowrap; }
+  .plus{ position:absolute; bottom:12px; right:14px; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:16px; font-weight:700; opacity:.0; transition:.2s; }
+
+  .state{ text-align:center; color:var(--muted); font-size:14px; padding:50px 0; }
+  .state.err{ color:#ff6b6b; }
+
+  /* bottom sheet */
+  .sheet-bg{ position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(3px); display:none; align-items:flex-end; justify-content:center; z-index:60; }
+  .sheet-bg.on{ display:flex; }
+  .sheet{ width:100%; max-width:460px; background:#202024; border:1px solid var(--line); border-bottom:none;
+          border-radius:26px 26px 0 0; padding:22px 20px calc(26px + env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+  .sheet-bg.on .sheet{ transform:translateY(0); }
+  .grip{ width:40px; height:5px; border-radius:99px; background:#48484e; margin:0 auto 18px; }
+  .sheet-head{ display:flex; align-items:center; gap:12px; margin-bottom:4px; }
+  .sheet-ico{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:22px; }
+  .sheet-title{ font-size:18px; font-weight:700; }
+  .sheet-cur{ color:var(--muted); font-size:13px; margin-top:1px; }
+  .sheet-cur b{ color:var(--text); font-weight:600; }
+  .in-row{ display:flex; align-items:center; gap:10px; border-bottom:2px solid var(--line); margin:22px 0 6px; padding-bottom:8px; }
+  .in-baht{ font-size:30px; font-weight:700; color:var(--muted); }
+  #sheetInput{ border:none; outline:none; background:transparent; color:var(--text); font-family:'Inter'; font-size:36px; font-weight:700; width:100%; }
+  #sheetInput::placeholder{ color:#48484e; }
+  .quick{ display:flex; gap:8px; margin:14px 0 4px; }
+  .quick button{ flex:1; background:#2a2a2f; border:1px solid var(--line); color:var(--text); border-radius:11px; padding:9px 0; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .quick button:active{ background:#333339; }
+  .sheet-save{ width:100%; border:none; border-radius:15px; padding:16px; margin-top:16px; font-family:inherit; font-size:16px; font-weight:700; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .sheet-save:disabled{ opacity:.65; }
+
+  .toast{ position:fixed; left:50%; top:24px; transform:translateX(-50%) translateY(-20px); background:#2ecc71; color:#06351c; font-weight:700; font-size:14px; padding:11px 20px; border-radius:99px; opacity:0; transition:.3s; z-index:80; pointer-events:none; box-shadow:0 10px 30px -8px rgba(46,204,113,.6); }
+  .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Totals Wealth</div>
+    <div class="meta">
+      <div class="date" id="dateText">—</div>
+      <button class="refresh" id="refreshBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        รีเฟรช
+      </button>
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="state" id="loading">กำลังโหลดข้อมูลจาก Google Sheet…</div>
+  </div>
+</div>
+
+<!-- bottom sheet กรอกเงิน -->
+<div class="sheet-bg" id="sheetBg">
+  <div class="sheet" id="sheet">
+    <div class="grip"></div>
+    <div class="sheet-head">
+      <div class="sheet-ico" id="sheetIco">🛡️</div>
+      <div>
+        <div class="sheet-title" id="sheetTitle">—</div>
+        <div class="sheet-cur">ยอดสะสมปัจจุบัน <b id="sheetCur">฿0</b></div>
+      </div>
+    </div>
+    <div class="in-row">
+      <span class="in-baht">฿</span>
+      <input id="sheetInput" type="number" inputmode="decimal" placeholder="0" />
+    </div>
+    <div style="color:var(--muted);font-size:12px;margin-top:2px">ใส่ค่าติดลบเพื่อถอนออก เช่น -500</div>
+    <div class="quick">
+      <button data-q="100">+100</button>
+      <button data-q="500">+500</button>
+      <button data-q="1000">+1,000</button>
+      <button data-q="5000">+5,000</button>
+    </div>
+    <button class="sheet-save" id="sheetSave">เพิ่มเข้ากอง</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">บันทึกแล้ว</div>
+
+<script>
+// ── ลิงก์ Google Apps Script (อ่าน+เขียน) ──
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbwhTEITZXOSUVNTXmUwcIZCk5IvymA3ikyl7qGl-a2lxocVODdz6YZADzhq2c9MEbKZtQ/exec";
+
+const CATS = [
+  { key:"emergency", label:"Emergency Fund", emoji:"🛡️", color:"#30d158" },
+  { key:"travel",    label:"Travel Fund",    emoji:"✈️", color:"#3da5ec" },
+  { key:"btc",       label:"BTC",            emoji:"₿",  color:"#f0932b" },
+  { key:"gold",      label:"GOLD",           emoji:"🥇", color:"#f6c945" },
+  { key:"stock",     label:"Stocks",         emoji:"📈", color:"#a55eea" },
+  { key:"fund",      label:"Mutual Funds",   emoji:"🌱", color:"#ff6b9d" },
+];
+
+const $ = id => document.getElementById(id);
+const nf = (n,d=0) => new Intl.NumberFormat("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const hex2rgb = h => { const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; };
+
+let currentData = { emergency:0, travel:0, btc:0, gold:0, stock:0, fund:0, date:"" };
+let activeKey = null;
+
+function updateClock(){
+  const d=new Date();
+  const day=new Intl.DateTimeFormat("en-US",{weekday:"long"}).format(d);
+  const md =new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric"}).format(d);
+  const t  =new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit"}).format(d);
+  $("dateText").textContent = `${day}, ${md} | ${t}`;
+}
+
+// ── อ่านข้อมูล (JSONP) ──
+let busy=false;
+function loadData(){
+  if(busy) return; busy=true;
+  $("refreshBtn").classList.add("spin");
+  const cb = "tw_"+Date.now();
+  const timer = setTimeout(()=>{ fail("หมดเวลาเชื่อมต่อ"); cleanup(); }, 12000);
+  window[cb] = data => { clearTimeout(timer); currentData = data; render(data); cleanup(); };
+  const s=document.createElement("script");
+  s.src = ENDPOINT + "?callback=" + cb + "&t=" + Date.now();
+  s.onerror = ()=>{ clearTimeout(timer); fail("เชื่อมต่อ Google Sheet ไม่ได้"); cleanup(); };
+  function cleanup(){ delete window[cb]; s.remove(); busy=false; $("refreshBtn").classList.remove("spin"); }
+  document.body.appendChild(s);
+}
+function fail(msg){
+  $("content").innerHTML =
+    `<div class="state err">${msg}<br><span style="color:var(--muted);font-size:12.5px">ลองกดรีเฟรชอีกครั้ง</span></div>`;
+}
+
+function render(data){
+  const vals = CATS.map(c => Math.max(0, Number(data[c.key])||0));
+  const total = vals.reduce((a,b)=>a+b,0);
+  const maxShare = Math.max(...vals, 1);
+
+  $("content").innerHTML = `
+    <div class="donut-zone">
+      <svg class="donut" id="donut" viewBox="0 0 200 200"></svg>
+      <div class="center">
+        <div class="total"><small>฿</small>${nf(total,2)}</div>
+        <div class="total-label">Total Balance</div>
+        <div class="delta" id="delta"></div>
+      </div>
+    </div>
+    <div class="hint">แตะที่กองเพื่อเพิ่มเงิน</div>
+    <div class="grid" id="grid"></div>`;
+
+  if(data.date){
+    const d=new Date(data.date);
+    if(!isNaN(d)) $("delta").textContent = "อัปเดต " + new Intl.DateTimeFormat("th-TH",{dateStyle:"medium"}).format(d);
+  }
+
+  // โดนัท
+  const svg=$("donut"), cx=100, cy=100, r=78, C=2*Math.PI*r, gap=total>0?4:0;
+  svg.setAttribute("style","transform:rotate(-90deg)");
+  svg.innerHTML = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2c2c31" stroke-width="22"/>`;
+  let off=0;
+  CATS.forEach((c,i)=>{
+    if(total<=0) return;
+    const frac=vals[i]/total, seg=frac*C, dash=Math.max(seg-gap,0);
+    svg.innerHTML += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${c.color}" stroke-width="22"
+      stroke-dasharray="${dash} ${C-dash}" stroke-dashoffset="${-off}"/>`;
+    off += seg;
+  });
+
+  // การ์ด (แตะได้)
+  $("grid").innerHTML = CATS.map((c,i)=>{
+    const [R,G,B]=hex2rgb(c.color);
+    const share = total>0 ? vals[i]/total*100 : 0;
+    return `<div class="acard" data-key="${c.key}" style="background:linear-gradient(150deg,rgba(${R},${G},${B},.20),rgba(${R},${G},${B},.05));border-color:rgba(${R},${G},${B},.28)">
+      <div class="emoji">${c.emoji}</div>
+      <div class="name">${c.label}</div>
+      <div class="amt"><small>฿</small>${nf(vals[i],0)}</div>
+      <div class="foot">
+        <span class="bar"><i style="background:${c.color}"></i></span>
+        <span class="pct">${share.toFixed(1)}%</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  document.querySelectorAll(".acard").forEach(el=>{
+    el.onclick = ()=> openSheet(el.dataset.key);
+  });
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll(".bar > i").forEach((el,i)=>{
+      el.style.width = ((vals[i]/maxShare)*100) + "%";
+    });
+  });
+}
+
+// ── เปิดช่องกรอกเงิน ──
+function openSheet(key){
+  activeKey = key;
+  const c = CATS.find(x=>x.key===key);
+  const [R,G,B]=hex2rgb(c.color);
+  $("sheetIco").textContent = c.emoji;
+  $("sheetIco").style.background = `rgba(${R},${G},${B},.2)`;
+  $("sheetTitle").textContent = c.label;
+  $("sheetCur").textContent = "฿" + nf(Number(currentData[key])||0, 0);
+  $("sheet").style.borderTop = `3px solid ${c.color}`;
+  const save=$("sheetSave"); save.style.background=c.color; save.textContent="เพิ่มเข้ากอง";
+  $("sheetInput").value=""; 
+  $("sheetBg").classList.add("on");
+  setTimeout(()=>$("sheetInput").focus(), 250);
+}
+function closeSheet(){ $("sheetBg").classList.remove("on"); activeKey=null; }
+
+// ── บันทึกเงินเข้ากอง ──
+async function saveAmount(){
+  const val = parseFloat($("sheetInput").value);
+  if(!val || val===0 || isNaN(val)){ $("sheetInput").focus(); return; }
+  const save=$("sheetSave"); save.disabled=true; save.textContent="กำลังบันทึก…";
+
+  const rec = { categoryKey:activeKey, amount:val, timestamp:new Date().toISOString() };
+  try{
+    await fetch(ENDPOINT, { method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(rec) });
+  }catch(e){}
+
+  const wasWithdraw = val < 0;
+  closeSheet();
+  showToast(wasWithdraw);
+  setTimeout(()=>{ save.disabled=false; loadData(); }, 600);
+}
+
+function showToast(isWithdraw){
+  const t=$("toast");
+  t.textContent = isWithdraw ? "ถอนเงินแล้ว" : "บันทึกแล้ว";
+  t.style.background = isWithdraw ? "#ff9f0a" : "#2ecc71";
+  t.style.color = isWithdraw ? "#3d2600" : "#06351c";
+  t.classList.add("on");
+  setTimeout(()=>t.classList.remove("on"), 1800);
+}
+
+// events
+$("refreshBtn").onclick = loadData;
+$("sheetSave").onclick = saveAmount;
+$("sheetBg").onclick = e => { if(e.target===$("sheetBg")) closeSheet(); };
+$("sheetInput").addEventListener("keydown", e=>{ if(e.key==="Enter") saveAmount(); });
+$("sheetInput").addEventListener("input", ()=>{
+  const v = parseFloat($("sheetInput").value);
+  $("sheetSave").textContent = (v < 0) ? "ถอนออกจากกอง" : "เพิ่มเข้ากอง";
+});
+document.querySelectorAll(".quick button").forEach(b=>{
+  b.onclick = ()=>{ const cur=parseFloat($("sheetInput").value)||0; $("sheetInput").value = cur + Number(b.dataset.q); $("sheetInput").focus(); };
+});
+
+// init
+updateClock(); setInterval(updateClock, 30000);
+loadData();
+</script>
+</body>
+</html>
