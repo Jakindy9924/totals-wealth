@@ -10,7 +10,7 @@
 <style>
   :root{
     --bg:#161618; --bg2:#1f1f22; --card:#232327; --line:#2e2e33;
-    --text:#f5f5f7; --muted:#8e8e93; --green:#30d158;
+    --text:#f5f5f7; --muted:#8e8e93; --green:#30d158; --red:#ff6b6b;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; }
   body{
@@ -46,11 +46,12 @@
   .acard .emoji{ position:absolute; top:14px; right:14px; font-size:19px; line-height:1; }
   .acard .amt{ font-size:23px; font-weight:800; letter-spacing:-.5px; margin-top:8px; }
   .acard .amt small{ font-size:16px; font-weight:700; }
+  .acard .sub{ font-size:11px; color:var(--muted); margin-top:5px; line-height:1.5; }
+  .acard .sub .pl{ font-weight:700; }
   .acard .foot{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:12px; }
   .bar{ height:5px; border-radius:99px; background:rgba(255,255,255,.12); flex:1; overflow:hidden; }
   .bar > i{ display:block; height:100%; border-radius:99px; width:0; transition:width .8s cubic-bezier(.2,.8,.2,1); }
   .pct{ font-size:13px; font-weight:600; color:var(--muted); white-space:nowrap; }
-  .plus{ position:absolute; bottom:12px; right:14px; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:16px; font-weight:700; opacity:.0; transition:.2s; }
 
   .state{ text-align:center; color:var(--muted); font-size:14px; padding:50px 0; }
   .state.err{ color:#ff6b6b; }
@@ -59,7 +60,7 @@
   .sheet-bg{ position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(3px); display:none; align-items:flex-end; justify-content:center; z-index:60; }
   .sheet-bg.on{ display:flex; }
   .sheet{ width:100%; max-width:460px; background:#202024; border:1px solid var(--line); border-bottom:none;
-          border-radius:26px 26px 0 0; padding:22px 20px calc(26px + env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+          border-radius:26px 26px 0 0; padding:22px 20px calc(26px + env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); max-height:92vh; overflow-y:auto; }
   .sheet-bg.on .sheet{ transform:translateY(0); }
   .grip{ width:40px; height:5px; border-radius:99px; background:#48484e; margin:0 auto 18px; }
   .sheet-head{ display:flex; align-items:center; gap:12px; margin-bottom:4px; }
@@ -67,15 +68,22 @@
   .sheet-title{ font-size:18px; font-weight:700; }
   .sheet-cur{ color:var(--muted); font-size:13px; margin-top:1px; }
   .sheet-cur b{ color:var(--text); font-weight:600; }
-  .in-row{ display:flex; align-items:center; gap:10px; border-bottom:2px solid var(--line); margin:22px 0 6px; padding-bottom:8px; }
-  .in-baht{ font-size:30px; font-weight:700; color:var(--muted); }
-  #sheetInput{ border:none; outline:none; background:transparent; color:var(--text); font-family:'Inter'; font-size:36px; font-weight:700; width:100%; }
-  #sheetInput::placeholder{ color:#48484e; }
+  .flabel{ font-size:12px; font-weight:600; color:var(--muted); margin:16px 0 0; }
+  .in-row{ display:flex; align-items:center; gap:10px; border-bottom:2px solid var(--line); margin:6px 0 0; padding-bottom:8px; }
+  .in-baht{ font-size:26px; font-weight:700; color:var(--muted); min-width:22px; }
+  .in-row input{ border:none; outline:none; background:transparent; color:var(--text); font-family:'Inter'; font-size:30px; font-weight:700; width:100%; }
+  .in-row input::placeholder{ color:#48484e; }
+  .hint2{ color:var(--muted); font-size:12px; margin-top:8px; }
   .quick{ display:flex; gap:8px; margin:14px 0 4px; }
   .quick button{ flex:1; background:#2a2a2f; border:1px solid var(--line); color:var(--text); border-radius:11px; padding:9px 0; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
   .quick button:active{ background:#333339; }
-  .sheet-save{ width:100%; border:none; border-radius:15px; padding:16px; margin-top:16px; font-family:inherit; font-size:16px; font-weight:700; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .sheet-save{ width:100%; border:none; border-radius:15px; padding:16px; margin-top:18px; font-family:inherit; font-size:16px; font-weight:700; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
   .sheet-save:disabled{ opacity:.65; }
+  .btc-stats{ background:#26262b; border:1px solid var(--line); border-radius:14px; padding:14px 15px; margin-top:14px; }
+  .btc-stats .big{ font-size:22px; font-weight:800; }
+  .btc-stats .lbl{ font-size:12px; color:var(--muted); }
+  .btc-stats .rowline{ display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-size:13px; }
+  .btc-stats .rowline span:last-child{ font-weight:600; }
 
   .toast{ position:fixed; left:50%; top:24px; transform:translateX(-50%) translateY(-20px); background:#2ecc71; color:#06351c; font-weight:700; font-size:14px; padding:11px 20px; border-radius:99px; opacity:0; transition:.3s; z-index:80; pointer-events:none; box-shadow:0 10px 30px -8px rgba(46,204,113,.6); }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
@@ -110,18 +118,7 @@
         <div class="sheet-cur">ยอดสะสมปัจจุบัน <b id="sheetCur">฿0</b></div>
       </div>
     </div>
-    <div class="in-row">
-      <span class="in-baht">฿</span>
-      <input id="sheetInput" type="number" inputmode="decimal" placeholder="0" />
-    </div>
-    <div style="color:var(--muted);font-size:12px;margin-top:2px">ใส่ค่าติดลบเพื่อถอนออก เช่น -500</div>
-    <div class="quick">
-      <button data-q="100">+100</button>
-      <button data-q="500">+500</button>
-      <button data-q="1000">+1,000</button>
-      <button data-q="5000">+5,000</button>
-    </div>
-    <button class="sheet-save" id="sheetSave">เพิ่มเข้ากอง</button>
+    <div id="sheetBody"></div>
   </div>
 </div>
 
@@ -130,6 +127,8 @@
 <script>
 // ── ลิงก์ Google Apps Script (อ่าน+เขียน) ──
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbwhTEITZXOSUVNTXmUwcIZCk5IvymA3ikyl7qGl-a2lxocVODdz6YZADzhq2c9MEbKZtQ/exec";
+// ── API ราคา BTC เป็นเงินบาท (CoinGecko ฟรี ไม่ต้องใช้ key) ──
+const BTC_PRICE_API = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=thb";
 
 const CATS = [
   { key:"emergency", label:"Emergency Fund", emoji:"🛡️", color:"#30d158" },
@@ -142,9 +141,11 @@ const CATS = [
 
 const $ = id => document.getElementById(id);
 const nf = (n,d=0) => new Intl.NumberFormat("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const nfBtc = n => new Intl.NumberFormat("en-US",{maximumFractionDigits:8}).format(n);
 const hex2rgb = h => { const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; };
 
-let currentData = { emergency:0, travel:0, btc:0, gold:0, stock:0, fund:0, date:"" };
+let currentData = null;
+let btcPrice = null;   // บาทต่อ 1 BTC
 let activeKey = null;
 
 function updateClock(){
@@ -153,6 +154,24 @@ function updateClock(){
   const md =new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric"}).format(d);
   const t  =new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit"}).format(d);
   $("dateText").textContent = `${day}, ${md} | ${t}`;
+}
+
+// มูลค่า BTC ปัจจุบัน (ถ้ามีราคาและมีเหรียญ) ไม่งั้น fallback เป็นเงินลงทุนจริง
+function btcMarketValue(data){
+  const qty = Number(data.btcQty)||0;
+  const invested = Number(data.btc)||0;
+  if(btcPrice && qty>0) return qty*btcPrice;
+  return invested;
+}
+
+// ── ดึงราคา BTC ──
+async function loadBtcPrice(){
+  try{
+    const res = await fetch(BTC_PRICE_API, { cache:"no-store" });
+    const j = await res.json();
+    btcPrice = (j && j.bitcoin && j.bitcoin.thb) ? j.bitcoin.thb : null;
+  }catch(e){ btcPrice = null; }
+  if(currentData) render(currentData);
 }
 
 // ── อ่านข้อมูล (JSONP) ──
@@ -175,7 +194,7 @@ function fail(msg){
 }
 
 function render(data){
-  const vals = CATS.map(c => Math.max(0, Number(data[c.key])||0));
+  const vals = CATS.map(c => c.key==="btc" ? Math.max(0, btcMarketValue(data)) : Math.max(0, Number(data[c.key])||0));
   const total = vals.reduce((a,b)=>a+b,0);
   const maxShare = Math.max(...vals, 1);
 
@@ -209,14 +228,27 @@ function render(data){
     off += seg;
   });
 
-  // การ์ด (แตะได้)
+  // การ์ด
   $("grid").innerHTML = CATS.map((c,i)=>{
     const [R,G,B]=hex2rgb(c.color);
     const share = total>0 ? vals[i]/total*100 : 0;
+    let sub = "";
+    if(c.key==="btc"){
+      const qty = Number(data.btcQty)||0;
+      const invested = Number(data.btc)||0;
+      let plHtml = "";
+      if(btcPrice && qty>0 && invested>0){
+        const pl = (vals[i]-invested)/invested*100;
+        const col = pl>=0 ? "var(--green)" : "var(--red)";
+        plHtml = ` · <span class="pl" style="color:${col}">${pl>=0?"+":""}${pl.toFixed(1)}%</span>`;
+      }
+      sub = `<div class="sub">${nfBtc(qty)} BTC · ลงจริง ฿${nf(invested,0)}${plHtml}</div>`;
+    }
     return `<div class="acard" data-key="${c.key}" style="background:linear-gradient(150deg,rgba(${R},${G},${B},.20),rgba(${R},${G},${B},.05));border-color:rgba(${R},${G},${B},.28)">
       <div class="emoji">${c.emoji}</div>
       <div class="name">${c.label}</div>
       <div class="amt"><small>฿</small>${nf(vals[i],0)}</div>
+      ${sub}
       <div class="foot">
         <span class="bar"><i style="background:${c.color}"></i></span>
         <span class="pct">${share.toFixed(1)}%</span>
@@ -224,55 +256,109 @@ function render(data){
     </div>`;
   }).join("");
 
-  document.querySelectorAll(".acard").forEach(el=>{
-    el.onclick = ()=> openSheet(el.dataset.key);
-  });
+  document.querySelectorAll(".acard").forEach(el=>{ el.onclick = ()=> openSheet(el.dataset.key); });
 
   requestAnimationFrame(()=>{
-    document.querySelectorAll(".bar > i").forEach((el,i)=>{
-      el.style.width = ((vals[i]/maxShare)*100) + "%";
-    });
+    document.querySelectorAll(".bar > i").forEach((el,i)=>{ el.style.width = ((vals[i]/maxShare)*100) + "%"; });
   });
 }
 
-// ── เปิดช่องกรอกเงิน ──
+// ── เปิดช่องกรอก ──
 function openSheet(key){
   activeKey = key;
   const c = CATS.find(x=>x.key===key);
   const [R,G,B]=hex2rgb(c.color);
+  const d = currentData || {};
   $("sheetIco").textContent = c.emoji;
   $("sheetIco").style.background = `rgba(${R},${G},${B},.2)`;
   $("sheetTitle").textContent = c.label;
-  $("sheetCur").textContent = "฿" + nf(Number(currentData[key])||0, 0);
   $("sheet").style.borderTop = `3px solid ${c.color}`;
-  const save=$("sheetSave"); save.style.background=c.color; save.textContent="เพิ่มเข้ากอง";
-  $("sheetInput").value=""; 
+
+  if(key==="btc"){
+    const qty = Number(d.btcQty)||0;
+    const invested = Number(d.btc)||0;
+    const market = btcMarketValue(d);
+    const plTxt = (btcPrice && qty>0 && invested>0)
+      ? (()=>{ const pl=(market-invested)/invested*100; const col=pl>=0?"var(--green)":"var(--red)"; return ` <span style="color:${col};font-weight:700">(${pl>=0?"+":""}${pl.toFixed(1)}%)</span>`; })()
+      : "";
+    $("sheetCur").textContent = `${nfBtc(qty)} BTC`;
+    $("sheetBody").innerHTML = `
+      <div class="btc-stats">
+        <div class="lbl">มูลค่าปัจจุบัน</div>
+        <div class="big">฿${nf(market,2)}</div>
+        <div class="rowline"><span>เงินลงจริงรวม</span><span>฿${nf(invested,2)}${plTxt}</span></div>
+        <div class="rowline"><span>ราคา BTC ตอนนี้</span><span>${btcPrice ? "฿"+nf(btcPrice,0)+" / เหรียญ" : "โหลดราคาไม่ได้"}</span></div>
+      </div>
+      <div class="flabel">จำนวนเงินที่ลงทุน (บาท)</div>
+      <div class="in-row"><span class="in-baht">฿</span><input id="sheetInput" type="number" inputmode="decimal" placeholder="0" /></div>
+      <div class="flabel">จำนวน BTC ที่ได้</div>
+      <div class="in-row"><span class="in-baht">₿</span><input id="btcQtyInput" type="number" step="any" inputmode="decimal" placeholder="0.00000000" /></div>
+      <div class="hint2">กรอกทั้งสองช่องได้ (ใส่ค่าติดลบเพื่อขาย/ถอนออก)</div>
+      <button class="sheet-save" id="sheetSave" style="background:${c.color}">เพิ่มเข้ากอง</button>`;
+  } else {
+    $("sheetCur").textContent = "฿" + nf(Number(d[key])||0, 0);
+    $("sheetBody").innerHTML = `
+      <div class="flabel">จำนวนเงิน (บาท)</div>
+      <div class="in-row"><span class="in-baht">฿</span><input id="sheetInput" type="number" inputmode="decimal" placeholder="0" /></div>
+      <div class="hint2">ใส่ค่าติดลบเพื่อถอนออก เช่น -500</div>
+      <div class="quick">
+        <button data-q="100">+100</button>
+        <button data-q="500">+500</button>
+        <button data-q="1000">+1,000</button>
+        <button data-q="5000">+5,000</button>
+      </div>
+      <button class="sheet-save" id="sheetSave" style="background:${c.color}">เพิ่มเข้ากอง</button>`;
+    $("sheetBody").querySelectorAll(".quick button").forEach(b=>{
+      b.onclick = ()=>{ const cur=parseFloat($("sheetInput").value)||0; $("sheetInput").value = cur + Number(b.dataset.q); $("sheetInput").focus(); };
+    });
+  }
+
+  // bind
+  const inp = $("sheetInput");
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter") saveAmount(); });
+  inp.addEventListener("input", updateSaveLabel);
+  if($("btcQtyInput")){
+    $("btcQtyInput").addEventListener("keydown", e=>{ if(e.key==="Enter") saveAmount(); });
+    $("btcQtyInput").addEventListener("input", updateSaveLabel);
+  }
+  $("sheetSave").onclick = saveAmount;
+
   $("sheetBg").classList.add("on");
-  setTimeout(()=>$("sheetInput").focus(), 250);
+  setTimeout(()=>inp.focus(), 250);
+}
+function updateSaveLabel(){
+  const v = parseFloat($("sheetInput").value)||0;
+  const q = $("btcQtyInput") ? (parseFloat($("btcQtyInput").value)||0) : 0;
+  const neg = (v<0 || q<0);
+  $("sheetSave").textContent = neg ? "ถอน/ขายออก" : "เพิ่มเข้ากอง";
 }
 function closeSheet(){ $("sheetBg").classList.remove("on"); activeKey=null; }
 
-// ── บันทึกเงินเข้ากอง ──
+// ── บันทึก ──
 async function saveAmount(){
-  const val = parseFloat($("sheetInput").value);
-  if(!val || val===0 || isNaN(val)){ $("sheetInput").focus(); return; }
-  const save=$("sheetSave"); save.disabled=true; save.textContent="กำลังบันทึก…";
+  const val = parseFloat($("sheetInput").value)||0;
+  let qty = 0;
+  if(activeKey==="btc" && $("btcQtyInput")) qty = parseFloat($("btcQtyInput").value)||0;
+  if(val===0 && qty===0){ $("sheetInput").focus(); return; }
 
+  const save=$("sheetSave"); save.disabled=true; save.textContent="กำลังบันทึก…";
   const rec = { categoryKey:activeKey, amount:val, timestamp:new Date().toISOString() };
+  if(activeKey==="btc") rec.btcQty = qty;
+
   try{
     await fetch(ENDPOINT, { method:"POST", mode:"no-cors",
       headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(rec) });
   }catch(e){}
 
-  const wasWithdraw = val < 0;
+  const wasWithdraw = (val<0 || qty<0);
   closeSheet();
   showToast(wasWithdraw);
-  setTimeout(()=>{ save.disabled=false; loadData(); }, 600);
+  setTimeout(()=>{ save.disabled=false; loadData(); }, 700);
 }
 
 function showToast(isWithdraw){
   const t=$("toast");
-  t.textContent = isWithdraw ? "ถอนเงินแล้ว" : "บันทึกแล้ว";
+  t.textContent = isWithdraw ? "ถอน/ขายแล้ว" : "บันทึกแล้ว";
   t.style.background = isWithdraw ? "#ff9f0a" : "#2ecc71";
   t.style.color = isWithdraw ? "#3d2600" : "#06351c";
   t.classList.add("on");
@@ -280,21 +366,14 @@ function showToast(isWithdraw){
 }
 
 // events
-$("refreshBtn").onclick = loadData;
-$("sheetSave").onclick = saveAmount;
+$("refreshBtn").onclick = ()=>{ loadData(); loadBtcPrice(); };
 $("sheetBg").onclick = e => { if(e.target===$("sheetBg")) closeSheet(); };
-$("sheetInput").addEventListener("keydown", e=>{ if(e.key==="Enter") saveAmount(); });
-$("sheetInput").addEventListener("input", ()=>{
-  const v = parseFloat($("sheetInput").value);
-  $("sheetSave").textContent = (v < 0) ? "ถอนออกจากกอง" : "เพิ่มเข้ากอง";
-});
-document.querySelectorAll(".quick button").forEach(b=>{
-  b.onclick = ()=>{ const cur=parseFloat($("sheetInput").value)||0; $("sheetInput").value = cur + Number(b.dataset.q); $("sheetInput").focus(); };
-});
 
 // init
 updateClock(); setInterval(updateClock, 30000);
 loadData();
+loadBtcPrice();
+setInterval(loadBtcPrice, 60000); // อัปเดตราคา BTC ทุก 1 นาที
 </script>
 </body>
 </html>
